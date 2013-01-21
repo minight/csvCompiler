@@ -12,12 +12,12 @@ function getFile(url, type){
         case 'online':
             request(url, function (error, response, body) {
                 if (error) throw error;
-                csv().from(body).to(fs.createWriteStream("./output/" +stripSpace(url)));
+               // csv().from(body).to(fs.createWriteStream("./output/" +stripSpace(url)));
                 //console.log('loggedonline');
             });
             break;
         case 'local':
-            csv().from(url).to(fs.createWriteStream("./output/" + url));
+            //csv().from(url).to(fs.createWriteStream("./output/" + url));
                 //console.log('logged offline');
             break;
         default:
@@ -30,7 +30,6 @@ function addToFile(array, colName){
         row[columns.indexOf(colName)] = array[i];
         finalCsv.push(row);
     }
-    row.splice();
 }
 
 
