@@ -1,5 +1,4 @@
-var request = require("request");
-request("http://syminight.com/OBS/site%20summary.csv", function (error, response, body) {
-if (error) throw error;
-	console.log(body); 
+var csv = require('csv');
+csv().from.stream(request("http://syminight.com/OBS/site%20summary.csv")).on('record', function (data, index) {
+console.log('#'+index+' '+JSON.stringify(data));
 });
