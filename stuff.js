@@ -9,36 +9,41 @@ function stripSpace(url){
     return url;
 }
 
-function processArray(array, testType){
+function processArray(array, column){
 //return 4;
 //chosen by diceroll, guaranteed to be random
+    for(i = 0; i < items.length; i++){
+        var itemName = items[i];
+        var calcResult;
+        switch(itemName){
+            
+        }
+    }
 }
 
-function getFile(url, type, iterator){
+function getFile(url, type, iterator, callback){
 // takes the url, reads the csv, and adds it to an array.
-    var csvArray = []; //this array intialized for the following loop
+    var csvArray = []; 
     var container = [];
-    container[0] = stripSpace(url);
-    var tempArray = [];
     switch(type){
         case 'online':
             request(url, function (error, response, body) {
                 if (error) throw error;
                 // csv().from(body).to(fs.createWriteStream("./output/" +stripSpace(url)));
                 csv().from(body).on('record', function(data, index){
-                    var iterator = data;
-                    iterator.unshift(index);
-                    container.push(iterator);
+                    var container = data;
+                    csvArray.push(container);
                 });
                 csv().from(body).on('end', function(data, index){
-                    csvArray.push(container);
+                    callback(csvArray);
                     fs.writeFile("result.txt", csvArray, function(err){
                         if (err) throw err;
-                        console.log("Its Saved... Hopefully");
+                        // console.log("Its Saved... Hopefully");
                     });
                 });
             });
             break;
+
         case 'local':
             break;
         default:
@@ -46,12 +51,12 @@ function getFile(url, type, iterator){
     }
 }
 //addToFile used to intialize the finalCsv array, so you dont get undefined rows
-function addToFile(fnArray, fnColName){
+function addToFile(fnArray, fnColumn){
     for(i = 0; i < fnArray.length; i++){
         var row = [];
-        row[columns.indexOf(fnColName)] = fnArray[i];
+        row[columns.indexOf(fnColumn)] = fnArray[i];
         finalCsv.push(row);
-        console.log(fnArray[i] + " index: " + i);
+        // console.log(fnArray[i] + " index: " + i);
     }
 }
 //used to fill data in columns, will fill as is in the array, so inlcude any gaps
@@ -86,8 +91,18 @@ var type = [    "online",
                 "online",
                 "local"];
 var fileNames = [name, type];
+outputArray = [];
 for(i = 0; i < name.length; i++){
-    getFile(fileNames[0][i],fileNames[1][i], i);
+    var getFileCounter = 0;
+    getFile(fileNames[0][i],fileNames[1][i], i, function(array){
+        // console.log("\nyes\n"  + array);
+        getFileCounter++;
+        outputArray.push(array);
+        console.log(getFileCounter);
+        if(getFileCounter >= 5){
+            console.log(outputArray);
+        }
+    });
 }
 
 var finalCsv = [];
@@ -114,5 +129,5 @@ var title = [' '];
 addToFile(title, " "); //using this different function to create all the rows to prevent type errors
 addColumn(items, "item"); //all the others will use this function to append to the created rows
 
-console.log(finalCsv);
+// console.log(finalCsv);
 csv().from(finalCsv).to('output.csv');
