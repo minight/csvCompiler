@@ -1,3 +1,4 @@
+//Reading this code may cause cognitive logical failure. No insurane is implied or explciitly granted
 var request = require("request");
 var csv = require("csv");
 var fs = require("fs");
@@ -15,6 +16,7 @@ function processArray(array, testType){
 
 function getFile(url, type, iterator){
 // takes the url, reads the csv, and adds it to an array.
+    var csvArray = []; //this array intialized for the following loop
     var container = [];
     container[0] = stripSpace(url);
     var tempArray = [];
@@ -83,7 +85,6 @@ var type = [    "online",
                 "online",
                 "online",
                 "local"];
-var csvArray = []; //this array intialized for the following loop
 var fileNames = [name, type];
 for(i = 0; i < name.length; i++){
     getFile(fileNames[0][i],fileNames[1][i], i);
@@ -100,8 +101,9 @@ var columns = [ " ",
                 "wtd",
                 "ytd"];
 finalCsv.push(columns);
-//the item column *pardon the longass array
+//the item column *pardon the longass array (second column)
 var items = [   "Visits", "   Paid Clicks", "   Unpaid Clicks", "Switches", "   Paid Switches", "   Unpaid Switches", "Conversion Rate", "   Paid", "   Unpaid", "eGPPS", "Gross Profit", "", "Impressions", "Clicks", "CTR", "AVG CPC", "Switches", "ConvRate", "Adj Switches", "Ad Spend", "CPA", "Total Spend", "eCPA", "", "Unique Visitors", "Page Views", "Avg. Duration", "Bounce Rate", "", "Paid Search", "Organic Search", "Email", "Direct", "Referral", "", "Alinta Energy", "Click Energy", "Energy Australia", "Australia Power & Gas", "", "NSW", "QLD", "SA", "VIC"];
+//title column for the first one
 var title = [' '];
     title[0] = "Site Stats";
     title[12] = "SEM Summary";
