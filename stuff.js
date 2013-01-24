@@ -49,7 +49,9 @@ function parse(str, special) {
     return date;
 }
 function calculate(array){
+    //this array will give you cancer. definitely.
     var self = this;
+
     self.count = function(location, date, val, col){
         var counter = 0;
         var counter2 = 1;
@@ -71,6 +73,7 @@ function calculate(array){
         }
         return answer;
     };
+    //fetches a value thats matched against a single field(date) or multiple (comp1). res1 is the column number or its position in the array.
     self.fetch = function(location, date, comp1, res1){
         var counter = 0;
         var counter2 = 0;
@@ -95,6 +98,7 @@ function calculate(array){
             }
         }else {
             switch(location){
+                // switch is used to change how many lines to skip (counter2) incase google anal. adds comment lines that will fsu. 
                 case 'conversion funnel':
                 case 'site summary':
                 case 'source report':
@@ -131,6 +135,7 @@ function processArray(array, index, column) {
 //chosen by diceroll, guaranteed to be random
     var date;
     var resultsArray = [];
+    // here we get which column it is, thereby defining what date we're using or whether its calculated or not. (wtd/ytd)
     switch(column){
     case 'prevDate':
         date = getDate(4);
@@ -142,9 +147,10 @@ function processArray(array, index, column) {
         console.log('notyetprogged');
         break;
     }
+    // initalize the class used for calculations
     var stuff = new calculate(array);
-    console.log(date);
-    console.log(column);
+    
+    //for each of the items, we will do the calculation for its value (using a bigassswitch because thats the only way i can think of as a scrub)
     for(i = 0; i < items.length; i++) {
         var itemName = items[i];
         var calcResult;
@@ -154,14 +160,19 @@ function processArray(array, index, column) {
             calcResult = stuff.fetch('site summary', date, '', 1);
             break;
         case '   Unpaid Clicks':
+            calcResult = stuff.fetch('site summary', date, '', 2) - stuff.fetch('SEM report', date, '', 2);
             break;
         case 'Switches':
+            calcResult = stuff.count('switch report', date, date, 2);
             break;
         case '   Unpaid Switches':
+            calcResult = stuff.count('switch report', date, date, 2) - stuff.fetch('SEM report', date, '', 9);
             break;
         case 'Conversion Rate':
+            calcResult = ( (stuff.fetch('SEM report', date, '', 7)) + ((stuff.count('switch report', date, date, 2) - stuff.fetch('SEM report', date, '', 9)) / (stuff.fetch('site summary', date, '', 2) - stuff.fetch('SEM report', date, '', 2))  )   ) / 2;
             break;
         case '   Unpaid':
+            calcResult = (stuff.count('switch report', date, date, 2) - stuff.fetch('SEM report', date, '', 9)) / (stuff.fetch('site summary', date, '', 2) - stuff.fetch('SEM report', date, '', 2));
             break;
         case 'eGPPS':
             calcResult = "";
@@ -197,10 +208,13 @@ function processArray(array, index, column) {
             calcResult = stuff.fetch('SEM report', date, '', 6);
             break;
         case 'CPA':
+            calcResult = stuff.fetch('SEM report', date, '', 8) / stuff.fetch('SEM report', date, '', 9);
             break;
         case 'Total Spend':
+            calcReslt = "";
             break;
         case 'eCPA':
+            calcReslt = "";
             break;
         case 'Page Views':
             calcResult = stuff.fetch('site summary', date, '', 2);
@@ -238,17 +252,17 @@ function processArray(array, index, column) {
         case 'Australia Power & Gas':
             calcResult = stuff.count('switch report', date, 'Australia Power & Gas', 3);
             break;
-        case 'NSW':
-            calcResult = stuff.count('switch report', date, 'NSW', 15);
+        case 'NSW'://dontforget to change back to 15 because of changes to the .csv
+            calcResult = stuff.count('switch report', date, 'NSW', 14);
             break;
         case 'QLD':
-            calcResult = stuff.count('switch report', date, 'QLD', 15);
+            calcResult = stuff.count('switch report', date, 'QLD', 14);
             break;
         case 'SA':
-            calcResult = stuff.count('switch report', date, 'SA', 15);
+            calcResult = stuff.count('switch report', date, 'SA', 14);
             break;
         case 'VIC':
-            calcResult = stuff.count('switch report', date, 'VIC', 15);
+            calcResult = stuff.count('switch report', date, 'VIC', 14);
             break;
         case "":
             calcResult = "";
@@ -259,6 +273,8 @@ function processArray(array, index, column) {
         console.log(calcResult + " " + itemName);
         // resultsArray.push(calcResult);
     }
+    // we stick these results into the array one by one, in order. then this array will be shoved into the final csv
+    // remember. this is all still in a callback. so you have to push it from here. else you'll push a blank array derpderp
     // console.log(resultsArray);
 }
 //used in the getFile function. To make it easier to read
