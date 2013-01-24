@@ -10,11 +10,15 @@ function decodeUrl(link) {
     decode = decode.slice(0, decode.lastIndexOf("."));
     return decode;
 }
-function getDate(difference) {
-    var today = new Date();
+function getDate(difference, day) {
+    var today;
+    if(day){
+        today = new Date(day);
+    }else { 
+        today = new Date();
+    }
     var dd = today.getDate() - difference;
     var mm = today.getMonth() + 1; //January is 0!
-
     var yyyy = today.getFullYear();
     if(dd < 10) {
         dd = '0' + dd;
@@ -22,23 +26,114 @@ function getDate(difference) {
     if(mm < 10) {
         mm = '0' + mm;
     }
-    today = yyyy + '-' + mm + '-' + dd;
-    today = Date.parse(today);
+
+    today = yyyy + "-" + mm + "-" + dd + " Z";
+    today = parse(today);
     return today;
 }
-function calculate(date, location){
-    if (!(this instanceof Lazy)) return new Lazy(em, opts);
+function parse(str, special) {
+    var date;
+    if(special){
+        date = getDate(0, str);
+    }else {
+        if(!/^(\d){8}$/.test(str)){
+            var string = str.split('-');
+            str = string.join('');
+        }
+        var y = str.substr(0,4),
+            m = str.substr(4,2),
+            d = str.substr(6,2);
+        date = new Date(y,m,d);
+        date = Date.parse(date+ ' Z');
+    }
+    return date;
+}
+function calculate(array){
     var self = this;
+    self.count = function(location, date, val, col){
+        var counter = 0;
+        var counter2 = 1;
+        var answer = 0;
+        while(counter <= columns.length) {
+            if(outputArrayIndex[counter] == location) {
+                break;
+            }else {
+                 counter++;
+            }
+        }
+        while(counter2 <= (outputArray[counter].length - 3)){
+            if(parse(outputArray[counter][counter2][1], "1") == date && outputArray[counter][counter2][col] == val){
+                answer++;
+                counter2++;
+            }else {
+                counter2++;
+            }
+        }
+        return answer;
+    };
+    self.fetch = function(location, date, comp1, res1){
+        var counter = 0;
+        var counter2 = 0;
+        var answer = 0;
+        while(counter <= columns.length) {
+            if(outputArrayIndex[counter] == location) {
+                break;
+            }else {
+                 counter++;
+            }
+        }
+        if(comp1){
+            // console.log(outputArray[counter]);
+            counter2 = 7;
+            while(counter2 <= outputArray[counter].length){
+                if(parse(outputArray[counter][counter2][0]) == date && outputArray[counter][counter2][1] == comp1){
+                    answer = outputArray[counter][counter2][res1];
+                    break;
+                }else {
+                    counter2++;
+                }
+            }
+        }else {
+            switch(location){
+                case 'conversion funnel':
+                case 'site summary':
+                case 'source report':
+                    counter2 = 7;
+                    while(counter2 <= outputArray[counter].length){
+                        if(parse(outputArray[counter][counter2][0]) == date){
+                            answer = outputArray[counter][counter2][res1];
+                            break;
+                        }else {
+                            counter2++;
+                        }
+                    }
+                    break;
+                case 'SEM report':
+                    counter2 = 1;
+                    while(counter2 < outputArray[counter].length){
+                        if(parse(outputArray[counter][counter2][0]) == date){
+                            answer = outputArray[counter][counter2][res1];
+                            break;
+                        }else {
+                            counter2++;
+                        }
+                    }
+                    break;
+                default:
+            }
+        }
+        return answer;
+    };
     //working on calculations
 }
 function processArray(array, index, column) {
 //return 4;
 //chosen by diceroll, guaranteed to be random
     var date;
-    var resultsArray;
+    var resultsArray = [];
     switch(column){
     case 'prevDate':
-        date = getDate(1);
+        date = getDate(4);
         break;
     case 'prevPrevDate':
         date = getDate(2);
@@ -47,7 +142,7 @@ function processArray(array, index, column) {
         console.log('notyetprogged');
         break;
     }
-    // console.log(array);
+    var stuff = new calculate(array);
     console.log(date);
     console.log(column);
     for(i = 0; i < items.length; i++) {
@@ -55,129 +150,116 @@ function processArray(array, index, column) {
         var calcResult;
         switch(itemName) {
         case 'Visits':
-            console.log(itemName);
-            break;
-        case '   Paid Clicks':
-            console.log(itemName);
+        case 'Unique Visitors':
+            calcResult = stuff.fetch('site summary', date, '', 1);
             break;
         case '   Unpaid Clicks':
-            console.log(itemName);
             break;
         case 'Switches':
-            console.log(itemName);
-            break;
-        case '   Paid Switches':
-            console.log(itemName);
             break;
         case '   Unpaid Switches':
-            console.log(itemName);
             break;
         case 'Conversion Rate':
-            console.log(itemName);
-            break;
-        case '   Paid':
-            console.log(itemName);
             break;
         case '   Unpaid':
-            console.log(itemName);
             break;
         case 'eGPPS':
-            console.log(itemName);
+            calcResult = "";
             break;
         case 'Gross Profit':
-            console.log(itemName);
+            calcResult = "";
             break;
         case 'Impressions':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 1);
             break;
+        case '   Paid Clicks':
         case 'Clicks':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 2);
             break;
         case 'CTR':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 3);
             break;
         case 'AVG CPC':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 4);
             break;
-        case 'Switches':
-            console.log(itemName);
+        case '   Paid Switches':
+        case 'SwitchesSEM':
+            calcResult = stuff.fetch('SEM report', date, '', 9);
             break;
+        case '   Paid':
         case 'ConvRate':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 7);
             break;
         case 'Adj Switches':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 9) * 0.8;
             break;
         case 'Ad Spend':
-            console.log(itemName);
+            calcResult = stuff.fetch('SEM report', date, '', 6);
             break;
         case 'CPA':
-            console.log(itemName);
             break;
         case 'Total Spend':
-            console.log(itemName);
             break;
         case 'eCPA':
-            console.log(itemName);
-            break;
-        case 'Unique Visitors':
-            console.log(itemName);
             break;
         case 'Page Views':
-            console.log(itemName);
+            calcResult = stuff.fetch('site summary', date, '', 2);
             break;
         case 'Avg. Duration':
-            console.log(itemName);
+            calcResult = stuff.fetch('site summary', date, '', 3);
             break;
         case 'Bounce Rate':
-            console.log(itemName);
+            calcResult = stuff.fetch('site summary', date, '', 4);
             break;
         case 'Paid Search':
-            console.log(itemName);
+            calcResult = stuff.fetch('source report', date, 'paid', 2);
             break;
         case 'Organic Search':
-            console.log(itemName);
+            calcResult = stuff.fetch('source report', date, 'organic', 2);
             break;
         case 'Email':
-            console.log(itemName);
+            calcResult = stuff.fetch('source report', date, 'email', 2);
             break;
         case 'Direct':
-            console.log(itemName);
+            calcResult = stuff.fetch('source report', date, 'direct', 2);
             break;
         case 'Referral':
-            console.log(itemName);
+            calcResult = stuff.fetch('source report', date, 'referral', 2);
             break;
         case 'Alinta Energy':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'Alinta Energy', 3);
             break;
         case 'Click Energy':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'Click Energy', 3);
             break;
         case 'Energy Australia':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'EnergyAustralia', 3);
             break;
         case 'Australia Power & Gas':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'Australia Power & Gas', 3);
             break;
         case 'NSW':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'NSW', 15);
             break;
         case 'QLD':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'QLD', 15);
             break;
         case 'SA':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'SA', 15);
             break;
         case 'VIC':
-            console.log(itemName);
+            calcResult = stuff.count('switch report', date, 'VIC', 15);
             break;
         case "":
-            console.log('SPAAAACE');
+            calcResult = "";
             break;
         default:
             console.log('borken' + itemName);
         }
+        console.log(calcResult + " " + itemName);
+        // resultsArray.push(calcResult);
     }
+    // console.log(resultsArray);
 }
 //used in the getFile function. To make it easier to read
 //in turn created a realllly long callback chain
@@ -256,7 +338,7 @@ var columns = [ " ",
                 "wtd",
                 "ytd"];
 //the item column *pardon the longass array (second column)
-var items = [   "Visits", "   Paid Clicks", "   Unpaid Clicks", "Switches", "   Paid Switches", "   Unpaid Switches", "Conversion Rate", "   Paid", "   Unpaid", "eGPPS", "Gross Profit", "", "Impressions", "Clicks", "CTR", "AVG CPC", "Switches", "ConvRate", "Adj Switches", "Ad Spend", "CPA", "Total Spend", "eCPA", "", "Unique Visitors", "Page Views", "Avg. Duration", "Bounce Rate", "", "Paid Search", "Organic Search", "Email", "Direct", "Referral", "", "Alinta Energy", "Click Energy", "Energy Australia", "Australia Power & Gas", "", "NSW", "QLD", "SA", "VIC"];
+var items = [   "Visits", "   Paid Clicks", "   Unpaid Clicks", "Switches", "   Paid Switches", "   Unpaid Switches", "Conversion Rate", "   Paid", "   Unpaid", "eGPPS", "Gross Profit", "", "Impressions", "Clicks", "CTR", "AVG CPC", "SwitchesSEM", "ConvRate", "Adj Switches", "Ad Spend", "CPA", "Total Spend", "eCPA", "", "Unique Visitors", "Page Views", "Avg. Duration", "Bounce Rate", "", "Paid Search", "Organic Search", "Email", "Direct", "Referral", "", "Alinta Energy", "Click Energy", "Energy Australia", "Australia Power & Gas", "", "NSW", "QLD", "SA", "VIC"];
 //title column for the first one
 var title = [];
     title[0] = "Site Stats";
@@ -269,7 +351,7 @@ var fileNames = [name, type];
 var outputArray = [];
 var outputArrayIndex = [];
 var finalCsv = [];
-
+new calculate();
 for(i = 0; i < name.length; i++) {
     var getFileCounter = 0;
     getFile(fileNames[0][i],fileNames[1][i], i, function(array, name) {
@@ -289,8 +371,6 @@ for(i = 0; i < name.length; i++) {
     }); // I MADE A FUNCTION IN A LOOP. WHAT ARE YOU GOING TO DO ABOUT IT
 }
 finalCsv.push(columns);
-initializeFile(title, " "); //using this different function to create all the rows to prevent type errors
-addColumn(items, "item"); //all the others will use this function to append to the created rows
-
-// console.log(finalCsv);
+initializeFile(title, " ");
+addColumn(items, "item");
 csv().from(finalCsv).to('output.csv');
