@@ -54,7 +54,7 @@ function parse(str, special) {
 function calculate(array){
     //this array will give you cancer. definitely.
     var self = this;
-    function sum(start, end, location, column, comp1){
+    function sum(start, end, location, column, comp1, special){
         // console.log(start,end);
         // comp1 is for comparison between two vals.
         var cur = start;
@@ -71,10 +71,8 @@ function calculate(array){
                  counter++;
             }
         }
-        // console.log(location, outputArray[counter]);
         if(comp1){
             // console.log("COMP1");
-            // console.log(outputArray[counter]);
             counter2 = 7;
             while(cur <= end){
                 counter2= 7;
@@ -101,8 +99,10 @@ function calculate(array){
                         counter2= 7;
                         while(counter2 <= (outputArray[counter].length-1)){
                             if(parse(outputArray[counter][counter2][0]) == cur){
-                                answer += Number(outputArray[counter][counter2][column]);
-                                // console.log("answer: " + answer);
+                                rawString = outputArray[counter][counter2][column];
+                                noCommas = rawString.replace(/[\,\%\ ]/g, '');
+                                answer += Number(noCommas);
+                                console.log("answer: " + answer);
                                 avgCounter++;
                             }
                             counter2++;
@@ -128,6 +128,7 @@ function calculate(array){
                     }
                     break;
                 default:
+                    console.log("derp");
             }
             // console.log("hi" + outputArray[counter][counter2]);
         }
@@ -233,12 +234,12 @@ function calculate(array){
         }
         return answer;
     };
-    self.sum = function(start,end,location,column,comp1){
-        result = sum(start,end,location,column,comp1);
+    self.sum = function(start, end, location, column, comp1, special){
+        result = sum(start, end, location, column, comp1, special);
         return result[0];
     };
     self.average = function(start,end,location,column,comp1){
-        result = sum(start,end,location,column,comp1);
+        result = sum(start, end, location, column, comp1);
         answer = result[0] / result[1];
         return answer;
     };
@@ -281,17 +282,20 @@ function processArray(array, index, column) {
     switch(column){
     case 'prevDate':
         //change to 1 because you want yesterdays stats not todays or maybe tomorrows
-        date = getDate(7);
+        date = getDate(3);
         break;
     case 'prevPrevDate':
         //change to prev + 1
-        date = getDate(8);
+        date = getDate(4);
         break;
     case 'change':
         calcType = "diff";
         break;
     case 'wtd':
         calcType = "wtd";
+        break;
+    case 'ytd':
+        calcType = "ytd";
         break;
     default:
         console.log('notyetprogged');
@@ -300,7 +304,7 @@ function processArray(array, index, column) {
     // console.log(date);
     // initalize the class used for calculations
     var stuff = new calculate(array);
-    if(date != null){
+    if(date !== null){
         for(i = 0; i < items.length; i++) {
             var itemName = items[i];
             var calcResult;
@@ -403,16 +407,16 @@ function processArray(array, index, column) {
                 calcResult = stuff.count('switch report', date, 'Australian Power & Gas', 3);
                 break;
             case 'NSW'://dontforget to change back to 15 because of changes to the .csv
-                calcResult = stuff.count('switch report', date, 'NSW', 14);
+                calcResult = stuff.count('switch report', date, 'NSW', 15);
                 break;
             case 'QLD':
-                calcResult = stuff.count('switch report', date, 'QLD', 14);
+                calcResult = stuff.count('switch report', date, 'QLD', 15);
                 break;
             case 'SA':
-                calcResult = stuff.count('switch report', date, 'SA', 14);
+                calcResult = stuff.count('switch report', date, 'SA', 15);
                 break;
             case 'VIC':
-                calcResult = stuff.count('switch report', date, 'VIC', 14);
+                calcResult = stuff.count('switch report', date, 'VIC', 15);
                 break;
             case "":
                 calcResult = "";
@@ -427,7 +431,13 @@ function processArray(array, index, column) {
     }
     if(calcType === "diff"){
         for(i = 1; i < finalCsv.length; i++) {
-            finalCsv[i][4] = ((finalCsv[i][2] / finalCsv[i][3]) - 1)*-1;
+            var col2 = finalCsv[i][2];
+            var col3 = finalCsv[i][3];
+            if(finalCsv[i][1] == "Bounce Rate"){
+                col2 = col2.replace(/[\,\%\ ]/g, '');
+                col3 = col3.replace(/[\,\%\ ]/g, '');
+            }
+            finalCsv[i][4] = ((col3 / col2) - 1);
             if(isNaN(finalCsv[i][4])){
                 finalCsv[i][4] = "";
             }
@@ -502,9 +512,9 @@ function processArray(array, index, column) {
             case 'Ad Spend':
                 calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 6);
                 break;
-            // case 'CPA':
-            //     calcResult = (stuff.fetch('SEM report', date, '', 8) / stuff.fetch('SEM report', date, '', 15));
-            //     break;
+            case 'CPA':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 8) / stuff.sum(startOfWeek, todayDate, 'SEM report', 15);
+                break;
             case 'Total Spend':
                 calcResult = "";
                 break;
@@ -515,7 +525,7 @@ function processArray(array, index, column) {
                 calcResult = stuff.sum(startOfWeek, todayDate, 'site summary', 2);
                 break;
             case 'Avg. Duration':
-                calcResult = stuff.average(startOfWeek, todayDate, 'site summary', 3);
+                calcResult = stuff.average(startOfWeek, todayDate, 'site summary', 3, "", "percentage");
                 break;
             case 'Bounce Rate':
                 calcResult = stuff.average(startOfWeek, todayDate, 'site summary', 4);
@@ -548,16 +558,153 @@ function processArray(array, index, column) {
                 calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 3, 'Australian Power & Gas');
                 break;
             case 'NSW'://dontforget to change back to 15 because of changes to the .csv
-                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 14, 'NSW');
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'NSW');
                 break;
             case 'QLD':
-                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 14, 'QLD');
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'QLD');
                 break;
             case 'SA':
-                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 14, 'SA');
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'SA');
                 break;
             case 'VIC':
-                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 14, 'VIC');
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'VIC');
+                break;
+            case "":
+                calcResult = "";
+                break;
+            default:
+                // console.log('borken' + itemName);
+            }
+            // console.log(calcResult + " " + itemName);
+            resultsArray.push(calcResult);
+        }
+        addColumn(resultsArray, column);
+    }
+    if(calcType === "ytd"){
+        //i need todays date,
+        //need the startof the week.
+        todayDate = getDate(3);
+        dateString = new Date(todayDate);
+        startOfWeek = getDate(0, "2013-01-07");
+        date2 = new Date(startOfWeek);
+        console.log("date string: " + dateString + " " + todayDate);
+        console.log("start of week" + date2 + " " + startOfWeek);
+        // var test = stuff.sum(startOfWeek, todayDate, 'site summary', 1);
+        for(i = 0; i < items.length; i++) {
+        // for(i = 0; i < 2; i++) {
+            var itemName = items[i];
+            var calcResult;
+            //console.log(itemName);
+            switch(itemName) {
+            case 'Visits':
+            case 'Unique Visitors':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'site summary', 1);
+                // console.log(calcResult + "Unique Visitors " );
+                break;
+            case '   Unpaid Clicks':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'site summary', 2) - stuff.sum(startOfWeek, todayDate, 'SEM report', 2);
+                break;
+            case 'Switches':// add special case for this (start, end, location, column, val, special)
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 2, todayDate, "maybe");
+                break;
+            case '   Unpaid Switches':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 2, todayDate, "maybe") - stuff.sum(startOfWeek, todayDate, 'SEM report', 15);
+                break;
+            case 'Conversion Rate':
+                calcResult = ( stuff.average(startOfWeek, todayDate, 'SEM report', 7) + (stuff.countSum(startOfWeek, todayDate, 'switch report', 2, todayDate, "maybe") - stuff.sum(startOfWeek, todayDate, 'SEM report', 15)) / (stuff.sum(startOfWeek, todayDate, 'site summary', 2) - stuff.sum(startOfWeek, todayDate, 'SEM report', 2))     ) / 2;
+                break;
+            case '   Unpaid':
+                calcResult = (stuff.countSum(startOfWeek, todayDate, 'switch report', 2, todayDate, "maybe") - stuff.sum(startOfWeek, todayDate, 'SEM report', 15)) / (stuff.sum(startOfWeek, todayDate, 'site summary', 2) - stuff.sum(startOfWeek, todayDate, 'SEM report', 2));
+                break;
+            case 'eGPPS':
+                calcResult = "";
+                break;
+            case 'Gross Profit':
+                calcResult = "";
+                break;
+            case 'Impressions':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 1);
+                break;
+            case '   Paid Clicks':
+            case 'Clicks':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 2);
+                break;
+            case 'CTR':
+                calcResult = stuff.average(startOfWeek, todayDate, 'SEM report', 3);
+                break;
+            case 'AVG CPC':
+                calcResult = stuff.average(startOfWeek, todayDate, 'SEM report', 4);
+                break;
+            case '   Paid Switches':
+            case 'SwitchesSEM':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 15);
+                break;
+            case '   Paid':
+            case 'ConvRate':
+                calcResult = stuff.average(startOfWeek, todayDate, 'SEM report', 7);
+                break;
+            case 'Adj Switches':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 15) * 0.8;
+                break;
+            case 'Ad Spend':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 6);
+                break;
+            case 'CPA':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'SEM report', 8) / stuff.sum(startOfWeek, todayDate, 'SEM report', 15);
+                break;
+            case 'Total Spend':
+                calcResult = "";
+                break;
+            case 'eCPA':
+                calcResult = "";
+                break;
+            case 'Page Views':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'site summary', 2);
+                break;
+            case 'Avg. Duration':
+                calcResult = stuff.average(startOfWeek, todayDate, 'site summary', 3, "percentage");
+                break;
+            case 'Bounce Rate':
+                calcResult = stuff.average(startOfWeek, todayDate, 'site summary', 4);
+                break;
+            case 'Paid Search':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'source report', 2, 'paid');
+                break;
+            case 'Organic Search':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'source report', 2, 'organic');
+                break;
+            case 'Email':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'source report', 2, 'email');
+                break;
+            case 'Direct':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'source report', 2, 'direct');
+                break;
+            case 'Referral':
+                calcResult = stuff.sum(startOfWeek, todayDate, 'source report', 2, 'referral');
+                break;
+            case 'Alinta Energy':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 3, 'Alinta Energy');
+                break;
+            case 'Click Energy':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 3, 'Click Energy');
+                break;
+            case 'Energy Australia':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 3, 'EnergyAustralia');
+                break;
+            case 'Australia Power & Gas':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 3, 'Australian Power & Gas');
+                break;
+            case 'NSW'://dontforget to change back to 15 because of changes to the .csv
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'NSW');
+                break;
+            case 'QLD':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'QLD');
+                break;
+            case 'SA':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'SA');
+                break;
+            case 'VIC':
+                calcResult = stuff.countSum(startOfWeek, todayDate, 'switch report', 15, 'VIC');
                 break;
             case "":
                 calcResult = "";
@@ -682,7 +829,7 @@ for(i = 0; i < name.length; i++) {
             //for(j = 2; j < 7; j++) {
                 processArray(outputArray, outputArrayIndex, columns[j]);
             }
-            console.log("SPITTINGOUTFINAL");
+            // console.log("SPITTINGOUTFINAL");
             csv().from(finalCsv).to('output.csv');
         }
     }); // I MADE A FUNCTION IN A LOOP. WHAT ARE YOU GOING TO DO ABOUT IT
