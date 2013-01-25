@@ -1,4 +1,9 @@
 //Reading this code may cause cognitive logical failure. No insurane is implied or explciitly granted
+// need to install npm for this
+// also need to install the modules below... and a few more...
+// https://github.com/minight/csvCompiler git is there. refer to stuff.js
+//plans.js was a demo a friend provided of how to do something similar
+
 var request = require("request");
 var csv = require("csv");
 var fs = require("fs");
@@ -55,7 +60,7 @@ function calculate(array){
     //this array will give you cancer. definitely.
     var self = this;
     function sum(start, end, location, column, comp1, special){
-        // console.log(start,end);
+        // // console.log(start,end);
         // comp1 is for comparison between two vals.
         var cur = start;
         var counter = 0;
@@ -63,7 +68,7 @@ function calculate(array){
         var avgCounter = 0;
         var answer = 0;
         var returnArray = [];
-        // console.log("location: " + location, "column: " + column);
+        // // console.log("location: " + location, "column: " + column);
         while(counter <= columns.length) {
             if(outputArrayIndex[counter] == location) {
                 break;
@@ -72,14 +77,14 @@ function calculate(array){
             }
         }
         if(comp1){
-            // console.log("COMP1");
+            // // console.log("COMP1");
             counter2 = 7;
             while(cur <= end){
                 counter2= 7;
                 while(counter2 <= (outputArray[counter].length-1)){
                     if(parse(outputArray[counter][counter2][0]) == cur && outputArray[counter][counter2][1] == comp1){
                         answer += Number(outputArray[counter][counter2][column]);
-                        // console.log("answer: " + answer);
+                        // // console.log("answer: " + answer);
                         avgCounter++;
                     }
                     counter2++;
@@ -93,16 +98,16 @@ function calculate(array){
                 case 'site summary':
                 case 'source report':
                     while(cur <= end){
-                        // console.log(avgCounter, cur);
-                        //console.log(parse(outputArray[counter][counter2][0]), outputArray[counter][counter2][0]);
-                        //console.log(cur, outputArray[counter][counter2][column]);
+                        // // console.log(avgCounter, cur);
+                        //// console.log(parse(outputArray[counter][counter2][0]), outputArray[counter][counter2][0]);
+                        //// console.log(cur, outputArray[counter][counter2][column]);
                         counter2= 7;
                         while(counter2 <= (outputArray[counter].length-1)){
                             if(parse(outputArray[counter][counter2][0]) == cur){
                                 rawString = outputArray[counter][counter2][column];
                                 noCommas = rawString.replace(/[\,\%\ ]/g, '');
                                 answer += Number(noCommas);
-                                console.log("answer: " + answer);
+                                // console.log("answer: " + answer);
                                 avgCounter++;
                             }
                             counter2++;
@@ -112,14 +117,14 @@ function calculate(array){
                     break;
                 case 'SEM report':
                     while(cur <= end){
-                        // console.log(avgCounter, cur);
-                        //console.log(parse(outputArray[counter][counter2][0]), outputArray[counter][counter2][0]);
-                        //console.log(cur, outputArray[counter][counter2][column]);
+                        // // console.log(avgCounter, cur);
+                        //// console.log(parse(outputArray[counter][counter2][0]), outputArray[counter][counter2][0]);
+                        //// console.log(cur, outputArray[counter][counter2][column]);
                         counter2= 1;
                         while(counter2 <= (outputArray[counter].length-1)){
                             if(parse(outputArray[counter][counter2][0]) == cur){
                                 answer += Number(outputArray[counter][counter2][column]);
-                                // console.log("answer: " + answer);
+                                // // console.log("answer: " + answer);
                                 avgCounter++;
                             }
                             counter2++;
@@ -128,12 +133,12 @@ function calculate(array){
                     }
                     break;
                 default:
-                    console.log("derp");
+                    // console.log("derp");
             }
-            // console.log("hi" + outputArray[counter][counter2]);
+            // // console.log("hi" + outputArray[counter][counter2]);
         }
         returnArray.push(answer, avgCounter);
-        // console.log(returnArray);
+        // // console.log(returnArray);
         return returnArray;
     }
     //i split count and self.count because i thought i could use it for countsum. turns out i cant.
@@ -190,7 +195,7 @@ function calculate(array){
             }
         }
         if(comp1){
-            // console.log(outputArray[counter]);
+            // // console.log(outputArray[counter]);
             counter2 = 7;
             while(counter2 <= outputArray[counter].length -2){
                 if(parse(outputArray[counter][counter2][0]) == date && outputArray[counter][counter2][1] == comp1){
@@ -198,7 +203,7 @@ function calculate(array){
                     break;
                 }else {
                     counter2++;
-                    // console.log(outputArray[counter][counter2]);
+                    // // console.log(outputArray[counter][counter2]);
                 }
             }
         }else {
@@ -209,7 +214,7 @@ function calculate(array){
                 case 'source report':
                     counter2 = 7;
                     while(counter2 <= outputArray[counter].length){
-                        // console.log(outputArray[counter][counter2][0]);
+                        // // console.log(outputArray[counter][counter2][0]);
                         if(parse(outputArray[counter][counter2][0]) == date){
                             answer = outputArray[counter][counter2][res1];
                             break;
@@ -250,7 +255,7 @@ function calculate(array){
         var avgCounter = 0;
         var answer = 0;
         var returnArray = [];
-        // console.log("location: " + location, "column: " + column);
+        // // console.log("location: " + location, "column: " + column);
         while(counter <= columns.length) {
             if(outputArrayIndex[counter] == location) {
                 break;
@@ -263,12 +268,12 @@ function calculate(array){
                     answer += Number(count(location, cur, cur, column, special));
                 }else {
                     answer += Number(count(location,cur,val, column));
-                    // console.log(Number(count(location,cur,val, column)));
+                    // // console.log(Number(count(location,cur,val, column)));
                 }
             cur += 86400000;
         }
         return answer;
-               // console.log("hi" + outputArray[counter][counter2]);
+               // // console.log("hi" + outputArray[counter][counter2]);
     };
     //working on calculations
 }
@@ -298,10 +303,10 @@ function processArray(array, index, column) {
         calcType = "ytd";
         break;
     default:
-        console.log('notyetprogged');
+        // console.log('notyetprogged');
         break;
     }
-    // console.log(date);
+    // // console.log(date);
     // initalize the class used for calculations
     var stuff = new calculate(array);
     if(date !== null){
@@ -422,9 +427,9 @@ function processArray(array, index, column) {
                 calcResult = "";
                 break;
             default:
-                console.log('borken' + itemName);
+                // console.log('borken' + itemName);
             }
-            // console.log(calcResult + " " + itemName);
+            // // console.log(calcResult + " " + itemName);
             resultsArray.push(calcResult);
         }
         addColumn(resultsArray, column);
@@ -451,14 +456,14 @@ function processArray(array, index, column) {
         dayOfWeek = dateString.getDay();
         startOfWeek = todayDate - ((dayOfWeek-1) * 86400000);
         date2 = new Date(startOfWeek);
-        console.log("date string: " + dateString + " " + todayDate);
-        console.log("start of week" + date2 + " " + startOfWeek);
+        // console.log("date string: " + dateString + " " + todayDate);
+        // console.log("start of week" + date2 + " " + startOfWeek);
         // var test = stuff.sum(startOfWeek, todayDate, 'site summary', 1);
         for(i = 0; i < items.length; i++) {
         // for(i = 0; i < 2; i++) {
             var itemName = items[i];
             var calcResult;
-            //console.log(itemName);
+            //// console.log(itemName);
             switch(itemName) {
             case 'Visits':
             case 'Unique Visitors':
@@ -573,9 +578,9 @@ function processArray(array, index, column) {
                 calcResult = "";
                 break;
             default:
-                // console.log('borken' + itemName);
+                // // console.log('borken' + itemName);
             }
-            // console.log(calcResult + " " + itemName);
+            // // console.log(calcResult + " " + itemName);
             resultsArray.push(calcResult);
         }
         addColumn(resultsArray, column);
@@ -587,19 +592,19 @@ function processArray(array, index, column) {
         dateString = new Date(todayDate);
         startOfWeek = getDate(0, "2013-01-07");
         date2 = new Date(startOfWeek);
-        console.log("date string: " + dateString + " " + todayDate);
-        console.log("start of week" + date2 + " " + startOfWeek);
+        // console.log("date string: " + dateString + " " + todayDate);
+        // console.log("start of week" + date2 + " " + startOfWeek);
         // var test = stuff.sum(startOfWeek, todayDate, 'site summary', 1);
         for(i = 0; i < items.length; i++) {
         // for(i = 0; i < 2; i++) {
             var itemName = items[i];
             var calcResult;
-            //console.log(itemName);
+            //// console.log(itemName);
             switch(itemName) {
             case 'Visits':
             case 'Unique Visitors':
                 calcResult = stuff.sum(startOfWeek, todayDate, 'site summary', 1);
-                // console.log(calcResult + "Unique Visitors " );
+                // // console.log(calcResult + "Unique Visitors " );
                 break;
             case '   Unpaid Clicks':
                 calcResult = stuff.sum(startOfWeek, todayDate, 'site summary', 2) - stuff.sum(startOfWeek, todayDate, 'SEM report', 2);
@@ -710,9 +715,9 @@ function processArray(array, index, column) {
                 calcResult = "";
                 break;
             default:
-                // console.log('borken' + itemName);
+                // // console.log('borken' + itemName);
             }
-            // console.log(calcResult + " " + itemName);
+            // // console.log(calcResult + " " + itemName);
             resultsArray.push(calcResult);
         }
         addColumn(resultsArray, column);
@@ -721,7 +726,7 @@ function processArray(array, index, column) {
     
     // we stick these results into the array one by one, in order. then this array will be shoved into the final csv
     // remember. this is all still in a callback. so you have to push it from here. else you'll push a blank array derpderp
-    // console.log(resultsArray);
+    // // console.log(resultsArray);
 }
 //used in the getFile function. To make it easier to read
 //in turn created a realllly long callback chain
@@ -749,7 +754,7 @@ function getFile(url, type, iterator, callback) {
         pushToArray(url, url, callback);
         break;
     default:
-        console.log('somethng went wrong' + url + " " + type);
+        // console.log('somethng went wrong' + url + " " + type);
     }
 }
 //addToFile used to intialize the finalCsv array, so you dont get undefined rows
@@ -829,7 +834,7 @@ for(i = 0; i < name.length; i++) {
             //for(j = 2; j < 7; j++) {
                 processArray(outputArray, outputArrayIndex, columns[j]);
             }
-            // console.log("SPITTINGOUTFINAL");
+            // // console.log("SPITTINGOUTFINAL");
             csv().from(finalCsv).to('output.csv');
         }
     }); // I MADE A FUNCTION IN A LOOP. WHAT ARE YOU GOING TO DO ABOUT IT
